@@ -30,6 +30,7 @@ function RobotMarkerBase({ robot, selected, dimmed, nowMs, onSelect }: Props) {
       onClick={() => onSelect(robot.robotId)}
       aria-label={`${robot.robotId}, ${visual.label}, battery ${robot.battery.toFixed(0)} percent`}
       aria-pressed={selected}
+      title={`${robot.robotId} · ${robot.robotType}\n${visual.label} · ${robot.battery.toFixed(0)}%\n(${robot.x.toFixed(0)}, ${robot.y.toFixed(0)})`}
       className="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-full"
       style={{
         left: `${leftPct}%`,
