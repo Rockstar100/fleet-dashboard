@@ -38,6 +38,12 @@ interface Options {
   onRestart: () => void;
 }
 
+/**
+ * Start the virtual clock just before 0 so the very first window, `(START, …]`,
+ * still includes the `t = 0` bucket (the windowing is half-open on the left).
+ */
+const START_T = -1;
+
 export function useReplay(dispatch: (action: FleetAction) => void, { events, enabled, onRestart }: Options): ReplayControls {
   const buckets = useMemo(() => bucketByTime(events), [events]);
 
@@ -46,7 +52,7 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
   const [speed, setSpeed] = useState<number>(REPLAY.defaultSpeed);
   const [currentT, setCurrentT] = useState(0);
 
-  const virtualTimeRef = useRef(0);
+  const virtualTimeRef = useRef(START_T);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const speedRef = useRef(speed);
@@ -72,7 +78,7 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
       if (due.length > 0) dispatch({ type: 'apply', events: due });
 
       virtualTimeRef.current = to;
-      setCurrentT(to);
+      setCurrentT(Math.max(0, to));
 
       if (to >= REPLAY.windowSeconds) {
         setPlaying(false);
@@ -102,7 +108,7 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
 
   const play = useCallback(() => {
     if (virtualTimeRef.current >= REPLAY.windowSeconds) {
-      virtualTimeRef.current = 0;
+      virtualTimeRef.current = START_T;
       setCurrentT(0);
       onRestart();
     }
@@ -114,7 +120,7 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
 
   const restart = useCallback(() => {
     stopLoop();
-    virtualTimeRef.current = 0;
+    virtualTimeRef.current = START_T;
     setCurrentT(0);
     onRestart();
     setPlaying(true);
@@ -127,7 +133,7 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
       // seeking forward just fast-forwards the events between here and there.
       if (target < virtualTimeRef.current) {
         onRestart();
-        virtualTimeRef.current = 0;
+        virtualTimeRef.current = START_T;
       }
       const due = eventsInWindow(buckets, virtualTimeRef.current, target);
       if (due.length > 0) dispatch({ type: 'apply', events: due });
