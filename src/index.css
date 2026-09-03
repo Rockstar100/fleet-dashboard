@@ -12,6 +12,26 @@ body,
   height: 100%;
 }
 
+/* Smooth scrolling for the main page and any internal scroll region (the
+   robot list). `scroll-behavior` only affects scrolls triggered by anchor
+   links, `scrollIntoView`, or `.scrollTo` — it does nothing to the raw
+   scroll-wheel/touch path a user drives directly, so this can't fight or
+   slow down manual scrolling. Reduced-motion users get instant jumps
+   instead, per the same accessibility rule the marker/pulse animations
+   already follow. */
+html {
+  scroll-behavior: smooth;
+}
+.scroll-smooth-region {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html,
+  .scroll-smooth-region {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   margin: 0;
   background-color: theme('colors.surface.0');

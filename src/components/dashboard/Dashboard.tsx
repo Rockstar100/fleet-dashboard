@@ -44,7 +44,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto p-4">
+      <div className="scroll-smooth-region min-h-0 flex-1 overflow-auto p-4">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4">
           <SummaryBar summary={summary} />
 
@@ -78,7 +78,7 @@ export function Dashboard() {
             >
               <FilterControls filters={filters} onChange={setFilters} attentionCount={attentionCount} />
 
-              <div className="max-h-[320px] min-h-[120px] overflow-y-auto overflow-x-hidden border-y border-line py-2">
+              <div className="scroll-smooth-region max-h-[320px] min-h-[120px] overflow-y-auto overflow-x-hidden border-y border-line py-2">
                 <RobotList robots={listRobots} selectedRobotId={selectedRobotId} onSelect={setSelectedRobotId} nowMs={attentionNowMs} />
               </div>
 
