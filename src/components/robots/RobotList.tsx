@@ -25,7 +25,7 @@ function RobotListBase({ robots, selectedRobotId, nowMs, onSelect }: Props) {
   }
 
   return (
-    <ul className="-mx-1 flex flex-1 flex-col overflow-y-auto" role="listbox" aria-label="Robots">
+    <ul className="-mx-1 flex min-w-0 flex-1 flex-col" role="listbox" aria-label="Robots">
       {robots.map((robot) => {
         const visual = statusVisual(robot.status);
         const attention = needsAttention(robot, { nowMs });

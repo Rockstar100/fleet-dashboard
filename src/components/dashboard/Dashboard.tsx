@@ -65,15 +65,15 @@ export function Dashboard() {
             {/* Fleet: search, filter, list and details as one cohesive workflow,
                 rather than three separately-bordered cards. */}
             <Panel
-              className="lg:min-h-[560px]"
+              className="min-w-0 lg:min-h-[560px]"
               padded={false}
-              contentClassName="min-h-0 gap-3 p-3"
+              contentClassName="min-h-0 min-w-0 gap-3 p-3"
               title="Fleet"
               meta={filtered ? `${listRobots.length} of ${robots.length}` : `${robots.length} robots`}
             >
               <FilterControls filters={filters} onChange={setFilters} attentionCount={attentionCount} />
 
-              <div className="flex min-h-[160px] flex-1 flex-col overflow-y-auto border-y border-line py-2">
+              <div className="flex min-h-[160px] flex-1 flex-col overflow-y-auto overflow-x-hidden border-y border-line py-2">
                 <RobotList robots={listRobots} selectedRobotId={selectedRobotId} onSelect={setSelectedRobotId} nowMs={attentionNowMs} />
               </div>
 
