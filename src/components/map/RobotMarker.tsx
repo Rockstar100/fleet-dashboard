@@ -37,7 +37,7 @@ function RobotMarkerBase({ robot, selected, dimmed, nowMs, instant, onSelect }: 
       aria-label={`${robot.robotId}, ${visual.label}, battery ${robot.battery.toFixed(0)} percent`}
       aria-pressed={selected}
       title={`${robot.robotId} - ${robot.robotType}\n${visual.label} - ${robot.battery.toFixed(0)}%\n(${robot.x.toFixed(0)}, ${robot.y.toFixed(0)})`}
-      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+      className={`group absolute -translate-x-1/2 -translate-y-1/2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
         instant ? 'marker-instant' : 'marker-motion'
       }`}
       style={{
@@ -47,18 +47,33 @@ function RobotMarkerBase({ robot, selected, dimmed, nowMs, instant, onSelect }: 
         zIndex: selected ? 30 : attention ? 20 : 10,
       }}
     >
+      {/* Selection ring: a distinct halo, not just a border-colour change, so the
+          selected robot reads as selected within a glance rather than on close
+          inspection. Scales up slightly too ("elevate") for the same reason. */}
+      {selected && (
+        <span
+          className="pointer-events-none absolute -inset-2 rounded-full border-2 border-accent"
+          style={{ boxShadow: '0 0 0 4px rgba(63,182,168,0.18)' }}
+          aria-hidden="true"
+        />
+      )}
+
       <span
-        className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] font-semibold leading-none shadow-md ${
-          attention ? 'attention-pulse' : ''
-        }`}
+        className={`relative flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold leading-none shadow-md transition-transform duration-150 ${
+          selected ? 'scale-110' : 'group-hover:scale-105'
+        } ${attention ? 'attention-pulse' : ''}`}
         style={{
-          backgroundColor: selected ? '#ffffff' : 'rgba(11,15,20,0.82)',
-          color: selected ? '#0b0f14' : '#e8edf4',
-          borderColor: attention ? '#f87171' : selected ? '#ffffff' : visual.color,
-          borderWidth: attention ? 2 : 1,
+          backgroundColor: selected ? '#e8fbf8' : 'rgba(11,15,20,0.85)',
+          color: selected ? '#0b3833' : '#e8edf4',
+          borderColor: attention ? '#f87171' : selected ? '#3fb6a8' : visual.color,
+          borderWidth: attention ? 2 : selected ? 1.5 : 1,
         }}
       >
-        <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: visual.color }} />
+        <span
+          className="inline-block h-2 w-2 shrink-0 rounded-full"
+          style={{ backgroundColor: attention ? '#f87171' : visual.color }}
+          aria-hidden="true"
+        />
         {robot.robotId}
       </span>
     </button>

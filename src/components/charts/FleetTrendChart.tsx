@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import {
   Area,
+  CartesianGrid,
   ComposedChart,
   Legend,
   Line,
@@ -11,6 +12,9 @@ import {
 } from 'recharts';
 import { formatClock } from '../../lib/format';
 import { CLASS_VISUALS } from '../../lib/statusVisuals';
+import { Panel } from '../ui/Panel';
+import { EmptyState } from '../ui/EmptyState';
+import { ActivityIcon } from '../ui/icons';
 import type { FleetSample } from '../../types/fleet';
 
 interface Props {
@@ -24,37 +28,19 @@ interface Props {
  * "what is the fleet doing right now".
  */
 function FleetTrendChartBase({ series }: Props) {
-  const data = useMemo(
-    () => series.map((s) => ({ ...s, label: formatClock(s.t) })),
-    [series],
-  );
-
-  if (data.length < 2) {
-    return (
-      <div className="grid h-full min-h-[180px] place-items-center rounded-lg border border-dashed border-line text-sm text-ink-lo">
-        Collecting trend data…
-      </div>
-    );
-  }
+  const data = useMemo(() => series.map((s) => ({ ...s, label: formatClock(s.t) })), [series]);
 
   return (
-    <div className="flex h-full flex-col gap-2">
-      <h2 className="text-sm font-semibold text-ink-mid">Fleet composition over time</h2>
-      <div className="min-h-[200px] flex-1">
-        <ResponsiveContainer width="100%" height="100%">
+    <Panel className="h-[280px]" title="Fleet trend" meta="operational class & avg battery">
+      {data.length < 2 ? (
+        <EmptyState icon={<ActivityIcon className="h-5 w-5" />} title="Collecting trend data…" />
+      ) : (
+        <div className="min-h-0 flex-1">
+          <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-            <XAxis
-              dataKey="label"
-              tick={{ fill: '#6b7889', fontSize: 11 }}
-              stroke="#2b3546"
-              minTickGap={40}
-            />
-            <YAxis
-              yAxisId="count"
-              allowDecimals={false}
-              tick={{ fill: '#6b7889', fontSize: 11 }}
-              stroke="#2b3546"
-            />
+            <CartesianGrid stroke="#1d2632" strokeDasharray="3 5" vertical={false} />
+            <XAxis dataKey="label" tick={{ fill: '#6b7889', fontSize: 11 }} stroke="#2b3546" minTickGap={40} />
+            <YAxis yAxisId="count" allowDecimals={false} tick={{ fill: '#6b7889', fontSize: 11 }} stroke="#2b3546" />
             <YAxis
               yAxisId="battery"
               orientation="right"
@@ -62,17 +48,20 @@ function FleetTrendChartBase({ series }: Props) {
               tick={{ fill: '#6b7889', fontSize: 11 }}
               stroke="#2b3546"
               width={34}
+              unit="%"
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: '#121821',
                 border: '1px solid #2b3546',
-                borderRadius: 8,
+                borderRadius: 10,
                 fontSize: 12,
+                padding: '8px 10px',
               }}
-              labelStyle={{ color: '#a9b6c7' }}
+              labelStyle={{ color: '#a9b6c7', marginBottom: 4 }}
+              itemStyle={{ padding: 0 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="circle" iconSize={8} />
             <Area
               yAxisId="count"
               type="monotone"
@@ -81,7 +70,8 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.working.color}
               fill={CLASS_VISUALS.working.color}
-              fillOpacity={0.5}
+              fillOpacity={0.35}
+              strokeWidth={1.5}
               isAnimationActive={false}
             />
             <Area
@@ -92,7 +82,8 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.healthy.color}
               fill={CLASS_VISUALS.healthy.color}
-              fillOpacity={0.5}
+              fillOpacity={0.3}
+              strokeWidth={1.5}
               isAnimationActive={false}
             />
             <Area
@@ -103,23 +94,25 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.attention.color}
               fill={CLASS_VISUALS.attention.color}
-              fillOpacity={0.55}
+              fillOpacity={0.4}
+              strokeWidth={1.5}
               isAnimationActive={false}
             />
             <Line
               yAxisId="battery"
               type="monotone"
               dataKey="avgBattery"
-              name="Avg battery %"
+              name="Avg battery"
               stroke="#e8edf4"
               strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
             />
           </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </Panel>
   );
 }
 

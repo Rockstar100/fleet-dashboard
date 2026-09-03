@@ -10,6 +10,7 @@ import { FilterControls } from '../robots/FilterControls';
 import { RobotList } from '../robots/RobotList';
 import { RobotDetails } from '../robots/RobotDetails';
 import { FleetTrendChart } from '../charts/FleetTrendChart';
+import { Panel } from '../ui/Panel';
 
 export function Dashboard() {
   const { robots, mode, switchMode, selectedRobotId, setSelectedRobotId, replay, live, attentionNowMs, trendSeries, summary } =
@@ -31,12 +32,14 @@ export function Dashboard() {
 
   const selectedRobot = selectedRobotId ? robots.find((r) => r.robotId === selectedRobotId) ?? null : null;
 
+  const filtered = listRobots.length !== robots.length;
+
   return (
     <div className="flex h-full flex-col bg-surface-0 text-ink-hi">
       <TopBar mode={mode} onModeChange={switchMode} live={live} />
 
       {mode === 'replay' && (
-        <div className="border-b border-line bg-surface-1 px-4 py-2">
+        <div className="shrink-0 border-b border-line bg-surface-1 px-5 py-2.5">
           <PlaybackControls replay={replay} />
         </div>
       )}
@@ -46,41 +49,36 @@ export function Dashboard() {
           <SummaryBar summary={summary} />
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-            {/* Map + trend */}
-            <div className="flex min-h-[560px] flex-col gap-4">
-              <div className="min-h-[420px] flex-1 rounded-xl border border-line bg-surface-1 p-3">
-                <SiteMap
-                  robots={robots}
-                  selectedRobotId={selectedRobotId}
-                  visibleRobotIds={visibleRobotIds}
-                  onSelect={setSelectedRobotId}
-                  nowMs={attentionNowMs}
-                  motionToken={mode === 'replay' ? replay.motionToken : 0}
-                />
-              </div>
-              <div className="h-[280px] rounded-xl border border-line bg-surface-1 p-3">
-                <FleetTrendChart series={trendSeries} />
-              </div>
+            {/* Map + trend — the primary operational surface. */}
+            <div className="flex flex-col gap-4 lg:min-h-[560px]">
+              <SiteMap
+                robots={robots}
+                selectedRobotId={selectedRobotId}
+                visibleRobotIds={visibleRobotIds}
+                onSelect={setSelectedRobotId}
+                nowMs={attentionNowMs}
+                motionToken={mode === 'replay' ? replay.motionToken : 0}
+              />
+              <FleetTrendChart series={trendSeries} />
             </div>
 
-            {/* Discovery + details */}
-            <div className="flex flex-col gap-3">
+            {/* Fleet: search, filter, list and details as one cohesive workflow,
+                rather than three separately-bordered cards. */}
+            <Panel
+              className="lg:min-h-[560px]"
+              padded={false}
+              contentClassName="min-h-0 gap-3 p-3"
+              title="Fleet"
+              meta={filtered ? `${listRobots.length} of ${robots.length}` : `${robots.length} robots`}
+            >
               <FilterControls filters={filters} onChange={setFilters} attentionCount={attentionCount} />
-              <div className="flex max-h-[440px] min-h-[240px] flex-col rounded-xl border border-line bg-surface-1 p-2">
-                <RobotList
-                  robots={listRobots}
-                  selectedRobotId={selectedRobotId}
-                  onSelect={setSelectedRobotId}
-                  nowMs={attentionNowMs}
-                />
+
+              <div className="flex min-h-[160px] flex-1 flex-col overflow-y-auto border-y border-line py-2">
+                <RobotList robots={listRobots} selectedRobotId={selectedRobotId} onSelect={setSelectedRobotId} nowMs={attentionNowMs} />
               </div>
-              <RobotDetails
-                robot={selectedRobot}
-                mode={mode}
-                nowMs={attentionNowMs}
-                onClear={() => setSelectedRobotId(null)}
-              />
-            </div>
+
+              <RobotDetails robot={selectedRobot} mode={mode} nowMs={attentionNowMs} onClear={() => setSelectedRobotId(null)} />
+            </Panel>
           </div>
         </div>
       </div>

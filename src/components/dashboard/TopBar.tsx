@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { formatAge } from '../../lib/format';
+import { SegmentedControl } from '../ui/SegmentedControl';
 import type { FleetMode } from '../../types/fleet';
 import type { LiveControls } from '../../hooks/useLiveFeed';
 
@@ -9,44 +10,29 @@ interface Props {
   live: LiveControls;
 }
 
+const MODE_OPTIONS = [
+  { value: 'replay' as const, label: 'Replay' },
+  { value: 'live' as const, label: 'Live' },
+];
+
 export function TopBar({ mode, onModeChange, live }: Props) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-1 px-4 py-3">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-line bg-surface-1 px-5">
       <div className="flex items-center gap-3">
-        <div className="grid h-8 w-8 place-items-center rounded-md bg-accent/20 text-accent">
-          <span className="text-lg leading-none">◈</span>
+        <div className="grid h-8 w-8 place-items-center rounded-md bg-accent/15 text-accent">
+          <span className="text-base leading-none">&#9670;</span>
         </div>
-        <div>
-          <h1 className="text-sm font-semibold text-ink-hi">Fleet Console</h1>
-          <p className="text-xs text-ink-lo">Peppermint Robotics &middot; site operations</p>
+        <div className="leading-tight">
+          <h1 className="text-[13.5px] font-semibold tracking-tight text-ink-hi">Fleet Console</h1>
+          <p className="text-[11px] text-ink-lo">Peppermint Robotics &middot; site operations</p>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         <FeedState mode={mode} live={live} />
-        <ModeSwitch mode={mode} onModeChange={onModeChange} />
+        <SegmentedControl value={mode} options={MODE_OPTIONS} onChange={onModeChange} ariaLabel="Data source mode" />
       </div>
     </header>
-  );
-}
-
-function ModeSwitch({ mode, onModeChange }: Pick<Props, 'mode' | 'onModeChange'>) {
-  return (
-    <div className="flex rounded-md border border-line bg-surface-2 p-0.5" role="group" aria-label="Data source mode">
-      {(['replay', 'live'] as const).map((m) => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => onModeChange(m)}
-          aria-pressed={mode === m}
-          className={`rounded px-3 py-1 text-xs font-semibold capitalize transition-colors ${
-            mode === m ? 'bg-accent text-surface-0' : 'text-ink-mid hover:text-ink-hi'
-          }`}
-        >
-          {m}
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -60,8 +46,8 @@ function FeedState({ mode, live }: Pick<Props, 'mode' | 'live'>) {
 
   if (mode === 'replay') {
     return (
-      <span className="flex items-center gap-1.5 text-xs text-ink-mid">
-        <span className="h-2 w-2 rounded-full bg-sky-400" />
+      <span className="hidden items-center gap-1.5 text-[11px] text-ink-mid sm:flex">
+        <span className="h-1.5 w-1.5 rounded-full bg-sky-400" aria-hidden="true" />
         Replaying recorded log
       </span>
     );
@@ -69,12 +55,14 @@ function FeedState({ mode, live }: Pick<Props, 'mode' | 'live'>) {
 
   const healthy = live.running && live.lastTickMs != null && Date.now() - live.lastTickMs < 4000;
   return (
-    <span className="flex items-center gap-1.5 text-xs text-ink-mid">
-      <span className={`h-2 w-2 rounded-full ${healthy ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+    <span className="hidden items-center gap-1.5 text-[11px] text-ink-mid sm:flex" role="status">
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${healthy ? 'bg-emerald-400' : 'bg-amber-400'}`}
+        aria-hidden="true"
+      />
       {healthy ? (
         <>
-          Live feed &middot; ~{live.eventsPerSecond}/s &middot; updated{' '}
-          {live.lastTickMs ? formatAge(Date.now() - live.lastTickMs) : '—'}
+          Live &middot; ~{live.eventsPerSecond}/s &middot; {live.lastTickMs ? formatAge(Date.now() - live.lastTickMs) : '—'}
         </>
       ) : (
         'Live feed starting…'

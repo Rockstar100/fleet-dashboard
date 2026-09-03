@@ -4,6 +4,7 @@ import { siteMapUrl } from '../../data';
 import { STATUS_VISUALS } from '../../lib/statusVisuals';
 import { RobotMarker } from './RobotMarker';
 import { useInstantAfter } from '../../hooks/useInstantAfter';
+import { Panel } from '../ui/Panel';
 import type { RobotState } from '../../types/fleet';
 
 interface Props {
@@ -19,7 +20,8 @@ interface Props {
 }
 
 /**
- * The site map with all robots overlaid.
+ * The site map with all robots overlaid — the visual hero of the dashboard,
+ * so it gets one panel and the image gets the rest of the space.
  *
  * Coordinate mapping: the map box is locked to layout.png's native aspect ratio
  * (900 x 560) via `aspect-ratio`, and the image fills it exactly. Every marker is
@@ -31,15 +33,18 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
   const instant = useInstantAfter(motionToken);
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-ink-mid">Site map</h2>
-        <span className="text-xs text-ink-lo">
+    <Panel
+      className="flex-1 lg:min-h-[420px]"
+      padded={false}
+      contentClassName="gap-3 p-3"
+      title="Site map"
+      meta={
+        <>
           {SITE.width}&times;{SITE.height} units &middot; {robots.length} robots
-        </span>
-      </div>
-
-      <div className="relative flex-1 overflow-hidden rounded-lg border border-line bg-surface-1">
+        </>
+      }
+    >
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-surface-0">
         <div
           className="relative mx-auto w-full"
           style={{ aspectRatio: `${SITE.width} / ${SITE.height}`, maxHeight: '100%' }}
@@ -77,16 +82,16 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
       </div>
 
       <MapLegend />
-    </div>
+    </Panel>
   );
 }
 
 function MapLegend() {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink-mid">
+    <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-[11px] text-ink-lo">
       {Object.entries(STATUS_VISUALS).map(([status, visual]) => (
         <span key={status} className="flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: visual.color }} />
+          <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: visual.color }} />
           {visual.label}
         </span>
       ))}
