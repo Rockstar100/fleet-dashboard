@@ -63,4 +63,22 @@ describe('liveSimulator', () => {
     }
     expect(sawCharging).toBe(true);
   });
+
+  it('never transitions an offline robot directly to charging, even at critical battery', () => {
+    // Offline means "not reporting" — it can't autonomously decide to head
+    // for a charger. It must recover to idle first, same as any other tick.
+    const offlineLowBattery: RobotState[] = [
+      { robotId: 'r9', robotType: 'picker', x: 100, y: 100, status: 'offline', battery: 4, lastEventT: 0, lastSeenWallMs: 0, updates: 0 },
+    ];
+    for (let seedValue = 1; seedValue <= 20; seedValue += 1) {
+      const sim = createLiveSimulator(offlineLowBattery, mulberry32(seedValue));
+      let prevStatus = 'offline';
+      for (let i = 0; i < 30; i += 1) {
+        const [raw] = sim.tick();
+        const status = raw!.status as string;
+        expect(prevStatus === 'offline' && status === 'charging').toBe(false);
+        prevStatus = status;
+      }
+    }
+  });
 });

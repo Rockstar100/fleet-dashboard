@@ -52,4 +52,26 @@ describe('status classification', () => {
     expect(attentionReason(robot({ status: 'error', battery: 10 }))).toMatch(/error/i);
     expect(attentionReason(robot({ status: 'active', battery: 8 }))).toMatch(/low battery/i);
   });
+
+  it('treats the low-battery threshold as inclusive: 20 needs attention, 20.1 does not', () => {
+    expect(needsAttention(robot({ status: 'active', battery: ATTENTION.lowBatteryPct }))).toBe(true);
+    expect(needsAttention(robot({ status: 'active', battery: ATTENTION.lowBatteryPct + 0.1 }))).toBe(false);
+  });
+
+  it('orders combined attention reasons deterministically: explicit fault, then stale, then battery', () => {
+    const now = 100_000;
+    const troubled = robot({
+      status: 'error',
+      battery: 5,
+      lastSeenWallMs: now - ATTENTION.staleAfterMs - 1,
+    });
+    const reason = attentionReason(troubled, { nowMs: now });
+    expect(reason).not.toBeNull();
+    const errorIdx = reason!.indexOf('error');
+    const staleIdx = reason!.indexOf('stale');
+    const batteryIdx = reason!.indexOf('Low battery');
+    expect(errorIdx).toBeGreaterThanOrEqual(0);
+    expect(staleIdx).toBeGreaterThan(errorIdx);
+    expect(batteryIdx).toBeGreaterThan(staleIdx);
+  });
 });

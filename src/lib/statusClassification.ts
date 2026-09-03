@@ -63,12 +63,19 @@ export function needsAttention(robot: RobotState, opts: ClassifyOptions = {}): b
   return false;
 }
 
-/** Human-readable reason shown in the robot detail panel. `null` when fine. */
+/**
+ * Human-readable reason(s) shown in the robot detail panel. `null` when fine.
+ *
+ * A robot can trip more than one clause at once (e.g. `error` + low battery),
+ * so this lists every applicable reason rather than picking just one — but
+ * the *order* is a fixed, deterministic priority so the most actionable fact
+ * always reads first, regardless of which clauses happen to be true:
+ *   1. an explicit fault status (the robot itself is reporting a problem)
+ *   2. stale telemetry (we've lost track of it, independent of last status)
+ *   3. low battery (a leading indicator, least urgent of the three)
+ */
 export function attentionReason(robot: RobotState, opts: ClassifyOptions = {}): string | null {
   const reasons: string[] = [];
-  if (opts.nowMs != null && isStale(robot, opts.nowMs)) {
-    reasons.push('No telemetry received recently (stale)');
-  }
   switch (robot.status) {
     case 'error':
       reasons.push('Reporting an error state');
@@ -84,6 +91,9 @@ export function attentionReason(robot: RobotState, opts: ClassifyOptions = {}): 
       break;
     default:
       break;
+  }
+  if (opts.nowMs != null && isStale(robot, opts.nowMs)) {
+    reasons.push('No telemetry received recently (stale)');
   }
   if (isLowBattery(robot)) {
     reasons.push(`Low battery (${robot.battery.toFixed(0)}%)`);

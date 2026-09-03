@@ -62,18 +62,27 @@ function pick<T>(rng: Rng, items: readonly T[]): T {
 /**
  * Decide the next status. Battery pressure dominates; otherwise mostly hold,
  * sometimes drift within the normal set, rarely fault or recover.
+ *
+ * `offline` is checked first and exempted from the low-battery routing below
+ * it: `offline` means the robot isn't reporting/deciding anything (that's the
+ * whole point of the status), so it can't "choose" to head for a charger
+ * while offline. It has to come back online (recover to `idle`) first, same
+ * as any other tick — only once it's no longer `offline` can low battery
+ * redirect it. A `blocked`/`error`/`maintenance` robot, by contrast, is still
+ * a reporting, reasoning robot, so a fail-safe "go charge anyway" override is
+ * plausible for those and is left in the low-battery branch below.
  */
 function nextStatus(robot: SimRobot, rng: Rng): RobotStatus {
   const roll = rng();
 
+  if (robot.status === 'offline') {
+    return roll < 0.3 ? 'idle' : 'offline';
+  }
   if (robot.battery <= ATTENTION.lowBatteryPct && robot.status !== 'charging') {
     return roll < 0.85 ? 'charging' : robot.status;
   }
   if (robot.status === 'charging') {
     return robot.battery >= 80 ? 'idle' : 'charging';
-  }
-  if (robot.status === 'offline') {
-    return roll < 0.3 ? 'idle' : 'offline';
   }
   if (FAULT_STATUSES.includes(robot.status)) {
     return roll < 0.4 ? 'idle' : robot.status; // recover
