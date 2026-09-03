@@ -47,11 +47,6 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
             if (e.target === e.currentTarget) onSelect(null);
           }}
         >
-          {/* layout.png is a plain white floor plan; a raw white rectangle sitting
-              inside an otherwise dark console reads as broken, not calm. The
-              filter inverts it into a dark-on-dark plan (matching the rest of
-              the theme) without touching a single pixel's coordinates — markers
-              are separate DOM elements laid out independently of the image. */}
           {imageError ? (
             <div className="absolute inset-0 grid place-items-center bg-surface-2 text-sm text-ink-lo">
               Site map image unavailable
@@ -63,7 +58,7 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
               draggable={false}
               onError={() => setImageError(true)}
               className="absolute inset-0 h-full w-full select-none"
-              style={{ objectFit: 'fill', filter: 'invert(1) brightness(0.94) contrast(1.08)' }}
+              style={{ objectFit: 'fill' }}
             />
           )}
 
