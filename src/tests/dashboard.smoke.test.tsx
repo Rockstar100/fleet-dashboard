@@ -17,7 +17,7 @@ describe('Dashboard smoke', () => {
     render(<Dashboard />);
 
     expect(screen.getByRole('heading', { name: /fleet console/i })).toBeInTheDocument();
-    expect(screen.getByText(/total robots/i)).toBeInTheDocument();
+    expect(screen.getByText(/total fleet/i)).toBeInTheDocument();
 
     // The roster has 8 robots; each appears as an option in the list.
     const list = screen.getByRole('listbox', { name: /robots/i });

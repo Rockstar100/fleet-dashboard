@@ -20,13 +20,16 @@ interface Props {
 }
 
 /**
- * The site map with all robots overlaid — the visual hero of the dashboard,
- * so it gets one panel and the image gets the rest of the space.
+ * The site map with all robots overlaid — the visual hero of the dashboard.
  *
- * Coordinate mapping: the map box is locked to layout.png's native aspect ratio
- * (900 x 560) via `aspect-ratio`, and the image fills it exactly. Every marker is
- * then placed at `x / 900` and `y / 560` as a percentage. No resize listeners, no
- * canvas maths — the browser keeps markers aligned as the box scales.
+ * Deliberately width-driven, not height-driven: the box is `width: 100%` of
+ * its column with `aspect-ratio: 900/560` computing the height. That fills
+ * the column edge to edge with no side gutters, and — just as importantly —
+ * means the map's size depends on nothing but its own column's width. It
+ * never stretches to fill leftover viewport height and never looks at the
+ * Fleet sidebar's height, so switching the selected robot (which can change
+ * how tall the sidebar's content is) can never move or resize the map.
+ * Every marker sits at `x / 900`, `y / 560` as a percentage of this same box.
  */
 export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motionToken = 0, onSelect }: Props) {
   const [imageError, setImageError] = useState(false);
@@ -34,7 +37,7 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
 
   return (
     <Panel
-      className="flex-1 lg:min-h-[420px]"
+      className="min-w-0"
       padded={false}
       contentClassName="gap-3 p-3"
       title="Site map"
@@ -44,41 +47,39 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
         </>
       }
     >
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-surface-0">
-        <div
-          className="relative mx-auto w-full"
-          style={{ aspectRatio: `${SITE.width} / ${SITE.height}`, maxHeight: '100%' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onSelect(null);
-          }}
-        >
-          {imageError ? (
-            <div className="absolute inset-0 grid place-items-center bg-surface-2 text-sm text-ink-lo">
-              Site map image unavailable
-            </div>
-          ) : (
-            <img
-              src={siteMapUrl}
-              alt="Site layout"
-              draggable={false}
-              onError={() => setImageError(true)}
-              className="absolute inset-0 h-full w-full select-none"
-              style={{ objectFit: 'fill' }}
-            />
-          )}
+      <div
+        className="relative w-full overflow-hidden rounded-lg bg-surface-0"
+        style={{ aspectRatio: `${SITE.width} / ${SITE.height}` }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onSelect(null);
+        }}
+      >
+        {imageError ? (
+          <div className="absolute inset-0 grid place-items-center bg-surface-2 text-sm text-ink-lo">
+            Site map image unavailable
+          </div>
+        ) : (
+          <img
+            src={siteMapUrl}
+            alt="Site layout"
+            draggable={false}
+            onError={() => setImageError(true)}
+            className="absolute inset-0 h-full w-full select-none"
+            style={{ objectFit: 'fill' }}
+          />
+        )}
 
-          {robots.map((robot) => (
-            <RobotMarker
-              key={robot.robotId}
-              robot={robot}
-              selected={robot.robotId === selectedRobotId}
-              dimmed={!visibleRobotIds.has(robot.robotId)}
-              nowMs={nowMs}
-              instant={instant}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
+        {robots.map((robot) => (
+          <RobotMarker
+            key={robot.robotId}
+            robot={robot}
+            selected={robot.robotId === selectedRobotId}
+            dimmed={!visibleRobotIds.has(robot.robotId)}
+            nowMs={nowMs}
+            instant={instant}
+            onSelect={onSelect}
+          />
+        ))}
       </div>
 
       <MapLegend />

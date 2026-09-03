@@ -45,7 +45,7 @@ export function Dashboard() {
       )}
 
       <div className="min-h-0 flex-1 overflow-auto p-4">
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-4">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-4">
           <SummaryBar summary={summary} />
 
           {/* items-start: the two columns are independent panels with their own

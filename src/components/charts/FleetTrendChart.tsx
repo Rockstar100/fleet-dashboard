@@ -31,14 +31,14 @@ function FleetTrendChartBase({ series }: Props) {
   const data = useMemo(() => series.map((s) => ({ ...s, label: formatClock(s.t) })), [series]);
 
   return (
-    <Panel className="h-[280px]" title="Fleet trend" meta="operational class & avg battery">
+    <Panel className="h-[260px]" title="Fleet trend" meta="Operational class · average battery">
       {data.length < 2 ? (
         <EmptyState icon={<ActivityIcon className="h-5 w-5" />} title="Collecting trend data…" />
       ) : (
         <div className="min-h-0 flex-1">
           <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-            <CartesianGrid stroke="#1d2632" strokeDasharray="3 5" vertical={false} />
+            <CartesianGrid stroke="#161d27" strokeDasharray="2 6" vertical={false} />
             <XAxis dataKey="label" tick={{ fill: '#6b7889', fontSize: 11 }} stroke="#2b3546" minTickGap={40} />
             <YAxis yAxisId="count" allowDecimals={false} tick={{ fill: '#6b7889', fontSize: 11 }} stroke="#2b3546" />
             <YAxis
@@ -70,8 +70,8 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.working.color}
               fill={CLASS_VISUALS.working.color}
-              fillOpacity={0.35}
-              strokeWidth={1.5}
+              fillOpacity={0.14}
+              strokeWidth={1.25}
               isAnimationActive={false}
             />
             <Area
@@ -82,8 +82,8 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.healthy.color}
               fill={CLASS_VISUALS.healthy.color}
-              fillOpacity={0.3}
-              strokeWidth={1.5}
+              fillOpacity={0.1}
+              strokeWidth={1.25}
               isAnimationActive={false}
             />
             <Area
@@ -94,8 +94,8 @@ function FleetTrendChartBase({ series }: Props) {
               stackId="fleet"
               stroke={CLASS_VISUALS.attention.color}
               fill={CLASS_VISUALS.attention.color}
-              fillOpacity={0.4}
-              strokeWidth={1.5}
+              fillOpacity={0.16}
+              strokeWidth={1.25}
               isAnimationActive={false}
             />
             <Line
@@ -103,8 +103,8 @@ function FleetTrendChartBase({ series }: Props) {
               type="monotone"
               dataKey="avgBattery"
               name="Avg battery"
-              stroke="#e8edf4"
-              strokeWidth={1.5}
+              stroke="#8b96a6"
+              strokeWidth={1.25}
               dot={false}
               isAnimationActive={false}
             />
