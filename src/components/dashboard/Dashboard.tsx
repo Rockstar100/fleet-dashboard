@@ -48,9 +48,14 @@ export function Dashboard() {
         <div className="mx-auto flex max-w-[1500px] flex-col gap-4">
           <SummaryBar summary={summary} />
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          {/* items-start: the two columns are independent panels with their own
+              natural height, not stretched to match each other. Forcing equal
+              height when the fleet panel's content is naturally shorter than
+              the map+chart column just produces a dead, empty gap somewhere
+              inside it — better for the panel to end where its content ends. */}
+          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
             {/* Map + trend — the primary operational surface. */}
-            <div className="flex flex-col gap-4 lg:min-h-[560px]">
+            <div className="flex flex-col gap-4">
               <SiteMap
                 robots={robots}
                 selectedRobotId={selectedRobotId}
@@ -65,15 +70,15 @@ export function Dashboard() {
             {/* Fleet: search, filter, list and details as one cohesive workflow,
                 rather than three separately-bordered cards. */}
             <Panel
-              className="min-w-0 lg:min-h-[560px]"
+              className="min-w-0"
               padded={false}
-              contentClassName="min-h-0 min-w-0 gap-3 p-3"
+              contentClassName="min-w-0 gap-3 p-3"
               title="Fleet"
               meta={filtered ? `${listRobots.length} of ${robots.length}` : `${robots.length} robots`}
             >
               <FilterControls filters={filters} onChange={setFilters} attentionCount={attentionCount} />
 
-              <div className="flex min-h-[160px] flex-1 flex-col overflow-y-auto overflow-x-hidden border-y border-line py-2">
+              <div className="max-h-[320px] min-h-[120px] overflow-y-auto overflow-x-hidden border-y border-line py-2">
                 <RobotList robots={listRobots} selectedRobotId={selectedRobotId} onSelect={setSelectedRobotId} nowMs={attentionNowMs} />
               </div>
 
