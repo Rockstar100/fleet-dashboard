@@ -3,6 +3,7 @@ import { SITE } from '../../lib/config';
 import { siteMapUrl } from '../../data';
 import { STATUS_VISUALS } from '../../lib/statusVisuals';
 import { RobotMarker } from './RobotMarker';
+import { useInstantAfter } from '../../hooks/useInstantAfter';
 import type { RobotState } from '../../types/fleet';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   visibleRobotIds: Set<string>;
   /** Wall clock for stale detection; undefined in replay mode. */
   nowMs?: number;
+  /** Bumped by the active replay/live source on a restart or seek. */
+  motionToken?: number;
   onSelect: (id: string | null) => void;
 }
 
@@ -23,8 +26,9 @@ interface Props {
  * then placed at `x / 900` and `y / 560` as a percentage. No resize listeners, no
  * canvas maths — the browser keeps markers aligned as the box scales.
  */
-export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, onSelect }: Props) {
+export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motionToken = 0, onSelect }: Props) {
   const [imageError, setImageError] = useState(false);
+  const instant = useInstantAfter(motionToken);
 
   return (
     <div className="flex h-full flex-col gap-3">
@@ -65,6 +69,7 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, onSel
               selected={robot.robotId === selectedRobotId}
               dimmed={!visibleRobotIds.has(robot.robotId)}
               nowMs={nowMs}
+              instant={instant}
               onSelect={onSelect}
             />
           ))}

@@ -55,6 +55,7 @@ export function Dashboard() {
                   visibleRobotIds={visibleRobotIds}
                   onSelect={setSelectedRobotId}
                   nowMs={attentionNowMs}
+                  motionToken={mode === 'replay' ? replay.motionToken : 0}
                 />
               </div>
               <div className="h-[280px] rounded-xl border border-line bg-surface-1 p-3">

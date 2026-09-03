@@ -172,6 +172,27 @@ npm run preview    # serve the built dist/ locally
    imported at build time. The deployment is one static artifact - no fetch,
    CORS, or backend.
 
+8. **Mode switching is guarded against stale-callback races.** `useReplay`'s
+   `requestAnimationFrame` loop and `useLiveFeed`'s interval each mirror their
+   `enabled` prop into a ref, updated synchronously during render. The
+   scheduled callback checks that ref before it dispatches or reschedules, so
+   a frame/tick already in flight when the operator switches modes can't land
+   a stale event in the new mode's state - it doesn't rely solely on
+   `cancelAnimationFrame`/`clearInterval` timing, which React does not
+   guarantee runs before the next queued browser callback. Covered by
+   `src/tests/modeSwitchRace.test.ts`, which stubs those cancellation APIs as
+   no-ops to prove the guard, not the cancellation, is what stops the stale
+   dispatch.
+
+9. **Replay jumps (scrub, restart) suppress the marker glide.** A big seek
+   dispatches its events in one batch, so the state update itself is correct
+   and atomic - but animating `left`/`top` over 240ms would still show a robot
+   visibly sliding across the map to its new spot. `useReplay` exposes a
+   `motionToken` bumped on every restart/seek; `useInstantAfter` (a small
+   "does this differ from what was last committed" hook) turns that into one
+   render with the CSS transition switched off, so the marker snaps instead.
+   Live mode never sets this - continuous small movement should stay animated.
+
 ---
 
 ## Status classification
@@ -240,6 +261,9 @@ Defined in `src/lib/statusClassification.ts`.
 | `statusClassification.test.ts` | working/healthy/attention buckets, low-battery rule, staleness, reason strings |
 | `eventParser.test.ts` | good record, bad status, NaN/missing fields, clamping, malformed JSONL lines |
 | `fleetMetrics.test.ts` | summary counts, `pushSample` de-dupe + cap, sample timestamping |
+| `useFleetMetrics.test.ts` | trend sampling is atomic per dispatch batch (never a partial fleet), series resets on `resetKey` change |
+| `useReplay.test.ts` | `motionToken` bumps on restart/every seek, not on plain play/pause |
+| `modeSwitchRace.test.ts` | a rAF frame / interval tick already in flight when the mode switches away does not dispatch, even with `cancelAnimationFrame`/`clearInterval` stubbed as no-ops |
 | `dashboard.smoke.test.tsx` | Dashboard mounts, 8 robots render, transport controls present |
 
 ---

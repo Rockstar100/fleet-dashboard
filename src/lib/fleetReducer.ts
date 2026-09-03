@@ -8,6 +8,15 @@
  *     than what we already have for that robot is dropped. This is the entire
  *     out-of-order / duplicate story: a late or replayed packet can't rewind a
  *     robot to a stale position.
+ *   - Two events for the same robot at the *same* `t` are not deduplicated —
+ *     the check is `<`, not `<=`. The recorded log never contains this, but if
+ *     it did, the tie-break is deterministic array order: `apply` processes
+ *     `action.events` with a plain `for` loop, so within one dispatch (one
+ *     bucket, one batch) the later entry in the array always wins. Producers
+ *     that promise ordered delivery (the recorded log is sorted by a stable
+ *     sort in eventParser; the live simulator emits one event per robot per
+ *     tick) already guarantee that "later in the array" means "actually
+ *     later", so no separate sequence number is needed.
  *   - Unknown robot ids are accepted (the roster could grow); `robotType` falls
  *     back to 'unknown' until robots.json says otherwise.
  *

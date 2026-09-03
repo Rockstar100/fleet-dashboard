@@ -34,8 +34,18 @@ export function useLiveFeed(dispatch: (action: FleetAction) => void, { enabled, 
   const getSeedRef = useRef(getSeed);
   getSeedRef.current = getSeed;
 
+  /**
+   * Mirrors `enabled` synchronously (see the matching comment in useReplay).
+   * An interval tick can already be queued when the user switches back to
+   * replay; `clearInterval` cancels future ticks but not one already in
+   * flight, so the callback itself refuses to dispatch once disabled.
+   */
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
   const tick = useCallback(
     (sim: ReturnType<typeof createLiveSimulator>) => {
+      if (!enabledRef.current) return;
       const now = Date.now();
       const parsed: FleetEvent[] = [];
       for (const raw of sim.tick()) {

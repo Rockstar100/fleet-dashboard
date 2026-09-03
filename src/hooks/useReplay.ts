@@ -29,6 +29,12 @@ export interface ReplayControls {
   setSpeed: (speed: number) => void;
   /** Jump to a fraction 0..1 of the window (scrubbing the progress bar). */
   seekFraction: (fraction: number) => void;
+  /**
+   * Bumped on every restart/seek. Consumers (the site map) use it to suppress
+   * the position CSS transition for the one render where the jump happens, so
+   * a robot doesn't visibly glide across the map after a scrub or restart.
+   */
+  motionToken: number;
 }
 
 interface Options {
@@ -51,12 +57,24 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState<number>(REPLAY.defaultSpeed);
   const [currentT, setCurrentT] = useState(0);
+  const [motionToken, setMotionToken] = useState(0);
+  const bumpMotion = useCallback(() => setMotionToken((t) => t + 1), []);
 
   const virtualTimeRef = useRef(START_T);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+
+  /**
+   * Mirrors `enabled` synchronously (updated during render, not in an effect).
+   * A rAF callback can be scheduled just before the user switches modes; React's
+   * effect cleanup that cancels it runs asynchronously, so as defense in depth
+   * the callback itself checks this ref and refuses to dispatch or reschedule
+   * once the mode has moved on, even if cancellation hasn't landed yet.
+   */
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
 
   const atEnd = currentT >= REPLAY.windowSeconds;
 
@@ -68,6 +86,11 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
 
   const frame = useCallback(
     (now: number) => {
+      // Belt-and-suspenders: if this mode was switched away from between the
+      // last frame being scheduled and now, do nothing — don't dispatch a
+      // stale replay event into live state, and don't reschedule.
+      if (!enabledRef.current) return;
+
       if (lastFrameRef.current == null) lastFrameRef.current = now;
       const deltaSeconds = ((now - lastFrameRef.current) / 1000) * speedRef.current;
       lastFrameRef.current = now;
@@ -111,9 +134,10 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
       virtualTimeRef.current = START_T;
       setCurrentT(0);
       onRestart();
+      bumpMotion();
     }
     setPlaying(true);
-  }, [onRestart]);
+  }, [onRestart, bumpMotion]);
 
   const pause = useCallback(() => setPlaying(false), []);
   const toggle = useCallback(() => (playing ? pause() : play()), [playing, play, pause]);
@@ -123,8 +147,9 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
     virtualTimeRef.current = START_T;
     setCurrentT(0);
     onRestart();
+    bumpMotion();
     setPlaying(true);
-  }, [onRestart, stopLoop]);
+  }, [onRestart, stopLoop, bumpMotion]);
 
   const seekFraction = useCallback(
     (fraction: number) => {
@@ -139,8 +164,12 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
       if (due.length > 0) dispatch({ type: 'apply', events: due });
       virtualTimeRef.current = target;
       setCurrentT(target);
+      // Any seek (forward fast-forward or backward reset) can move a robot a
+      // long way in one dispatch; suppress the position transition so it
+      // snaps instead of visibly gliding across the map.
+      bumpMotion();
     },
-    [buckets, dispatch, onRestart],
+    [buckets, dispatch, onRestart, bumpMotion],
   );
 
   return {
@@ -155,5 +184,6 @@ export function useReplay(dispatch: (action: FleetAction) => void, { events, ena
     restart,
     setSpeed,
     seekFraction,
+    motionToken,
   };
 }

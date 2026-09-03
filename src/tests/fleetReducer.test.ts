@@ -38,6 +38,36 @@ describe('fleetReducer', () => {
     expect(state.robots.r1!.lastEventT).toBe(20);
   });
 
+  it('resolves two same-timestamp events for one robot by array order (later wins)', () => {
+    const state = fleetReducer(initFleetState(roster), {
+      type: 'apply',
+      events: [
+        evt({ t: 30, x: 1, status: 'active' }),
+        evt({ t: 30, x: 2, status: 'blocked' }),
+      ],
+      nowMs: 1,
+    });
+    // Both share t=30; the second one in the batch is the deterministic winner.
+    expect(state.robots.r1).toMatchObject({ x: 2, status: 'blocked', lastEventT: 30, updates: 2 });
+  });
+
+  it('does not let one robot update mutate another robot in the same batch', () => {
+    const twoRobotRoster: RobotSpec[] = [
+      { robot_id: 'r1', robot_type: 'picker', start: { x: 0, y: 0 } },
+      { robot_id: 'r2', robot_type: 'hauler', start: { x: 0, y: 0 } },
+    ];
+    const before = initFleetState(twoRobotRoster);
+    const after = fleetReducer(before, {
+      type: 'apply',
+      events: [evt({ robotId: 'r1', t: 1, x: 500 })],
+      nowMs: 1,
+    });
+    expect(after.robots.r1!.x).toBe(500);
+    expect(after.robots.r2).toEqual(before.robots.r2);
+    // The reducer must not mutate the previous state object either.
+    expect(before.robots.r1!.x).toBe(0);
+  });
+
   it('accepts an unknown robot id with a fallback type', () => {
     const state = fleetReducer(initFleetState(roster), {
       type: 'apply',

@@ -9,6 +9,8 @@ interface Props {
   selected: boolean;
   dimmed: boolean;
   nowMs?: number;
+  /** True for the one render a jump (replay seek/restart) lands on; suppresses the glide. */
+  instant?: boolean;
   onSelect: (id: string) => void;
 }
 
@@ -17,12 +19,16 @@ interface Props {
  * aligned with layout.png at any size; the marker itself is a fixed pixel size
  * so it never becomes illegible on small screens.
  */
-function RobotMarkerBase({ robot, selected, dimmed, nowMs, onSelect }: Props) {
+function RobotMarkerBase({ robot, selected, dimmed, nowMs, instant, onSelect }: Props) {
   const visual = statusVisual(robot.status);
   const attention = needsAttention(robot, { nowMs });
 
   const leftPct = (robot.x / SITE.width) * 100;
   const topPct = (robot.y / SITE.height) * 100;
+
+  // A filtered-out robot still needs to read as "needs attention" — don't let
+  // dimming make an urgent robot effectively invisible on the map.
+  const dimmedOpacity = attention ? 0.55 : 0.28;
 
   return (
     <button
@@ -30,13 +36,14 @@ function RobotMarkerBase({ robot, selected, dimmed, nowMs, onSelect }: Props) {
       onClick={() => onSelect(robot.robotId)}
       aria-label={`${robot.robotId}, ${visual.label}, battery ${robot.battery.toFixed(0)} percent`}
       aria-pressed={selected}
-      title={`${robot.robotId} · ${robot.robotType}\n${visual.label} · ${robot.battery.toFixed(0)}%\n(${robot.x.toFixed(0)}, ${robot.y.toFixed(0)})`}
-      className="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-full"
+      title={`${robot.robotId} - ${robot.robotType}\n${visual.label} - ${robot.battery.toFixed(0)}%\n(${robot.x.toFixed(0)}, ${robot.y.toFixed(0)})`}
+      className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+        instant ? 'marker-instant' : 'marker-motion'
+      }`}
       style={{
         left: `${leftPct}%`,
         top: `${topPct}%`,
-        opacity: dimmed && !selected ? 0.28 : 1,
-        transition: 'left 240ms linear, top 240ms linear, opacity 160ms ease',
+        opacity: dimmed && !selected ? dimmedOpacity : 1,
         zIndex: selected ? 30 : attention ? 20 : 10,
       }}
     >
