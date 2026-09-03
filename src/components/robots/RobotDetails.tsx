@@ -49,10 +49,10 @@ export function RobotDetails({ robot, mode, nowMs, onClear }: Props) {
     [mode === 'replay' ? 'Event time' : 'Feed time', formatClock(robot.lastEventT < 0 ? 0 : robot.lastEventT)],
     ['Last update', ageMs == null ? '—' : formatAge(ageMs)],
     ['Updates', String(robot.updates)],
+    // Always render the task row so selecting a robot that once saw a
+    // task_event doesn't grow the panel relative to one that never did.
+    ['Last task', robot.lastTaskEvent ? titleCase(robot.lastTaskEvent) : '—'],
   ];
-  if (robot.lastTaskEvent) {
-    telemetry.push(['Last task', titleCase(robot.lastTaskEvent)]);
-  }
 
   return (
     <div className="flex flex-col gap-3">

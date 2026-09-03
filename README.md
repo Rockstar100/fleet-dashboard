@@ -91,10 +91,13 @@ npm run preview    # serve the built dist/ locally
   900x560 aspect ratio and each marker is placed at `x/900` and `y/560` as a
   percentage - no resize listeners, alignment survives any screen size.
 - Status shown by colour (legend below the map) + label; selected robot gets a
-  white chip and raised z-index; attention robots get a red pulsing ring.
+  teal border chip and raised z-index; attention robots get a small red
+  corner badge (independent of selection — selected+attention stays teal-
+  bordered with the red badge, not a red ring).
 - Filtered-out robots dim to 28% rather than disappearing, so the map stays a
   faithful picture of the site.
-- Click a marker (or a list row) to select; click empty map to deselect.
+- Click a marker (or a list row) to select; click empty map (including the
+  layout image) to deselect.
 
 **Replay mode** (`useReplay.ts`, `replayClock.ts`, `PlaybackControls.tsx`)
 
@@ -235,6 +238,9 @@ Defined in `src/lib/statusClassification.ts`.
 - No persistence - reloading restarts replay and clears live history.
 - Trend series is capped at 240 points (a rolling ~20-minute window in a long
   live session).
+- Stale-telemetry attention is implemented and tested, but the in-browser live
+  simulator updates every robot every tick, so a single-robot stall is not
+  observable unless the feed itself stops. A real socket feed would surface it.
 - One breakpoint - usable on a tablet but designed for a desktop station.
 
 ## What I would build next
@@ -255,16 +261,18 @@ Defined in `src/lib/statusClassification.ts`.
 
 | File | Covers |
 | --- | --- |
-| `fleetReducer.test.ts` | apply, stale/out-of-order rejection, unknown robot, `rebase` semantics |
+| `fleetReducer.test.ts` | apply, stale/out-of-order rejection, same-timestamp order, unknown robot, `rebase` semantics |
 | `replayClock.test.ts` | bucketing, half-open `(from, to]` windowing, no double-emit, progress clamp |
 | `liveSimulator.test.ts` | one valid event/robot/tick, bounds + battery + status stay valid over 500 ticks, low-battery -> charging |
 | `statusClassification.test.ts` | working/healthy/attention buckets, low-battery rule, staleness, reason strings |
 | `eventParser.test.ts` | good record, bad status, NaN/missing fields, clamping, malformed JSONL lines |
 | `fleetMetrics.test.ts` | summary counts, `pushSample` de-dupe + cap, sample timestamping |
+| `filterRobots.test.ts` | search (id/type/case), status + attention filters, AND combos, attention-first sort |
 | `useFleetMetrics.test.ts` | trend sampling is atomic per dispatch batch (never a partial fleet), series resets on `resetKey` change |
 | `useReplay.test.ts` | `motionToken` bumps on restart/every seek, not on plain play/pause |
 | `modeSwitchRace.test.ts` | a rAF frame / interval tick already in flight when the mode switches away does not dispatch, even with `cancelAnimationFrame`/`clearInterval` stubbed as no-ops |
-| `dashboard.smoke.test.tsx` | Dashboard mounts, 8 robots render, transport controls present |
+| `robotDetails.layoutStability.test.tsx` | reserved status-region height for healthy vs attention; empty-state min-height |
+| `dashboard.smoke.test.tsx` | Dashboard mounts, 8 robots render, transport controls present, map/list/details selection sync + empty-map deselect |
 
 ---
 

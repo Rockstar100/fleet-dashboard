@@ -51,7 +51,11 @@ export function SiteMap({ robots, selectedRobotId, visibleRobotIds, nowMs, motio
         className="relative w-full overflow-hidden rounded-lg bg-surface-0"
         style={{ aspectRatio: `${SITE.width} / ${SITE.height}` }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) onSelect(null);
+          // The layout <img> covers the whole plane, so `e.target === e.currentTarget`
+          // never fires for a real empty-map click. Deselect whenever the click
+          // is not on a marker button (markers stopPropagation themselves).
+          if ((e.target as HTMLElement).closest('button')) return;
+          onSelect(null);
         }}
       >
         {imageError ? (

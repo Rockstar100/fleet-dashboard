@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Neutral industrial palette. Status colours live in statusClassification.ts
+        // Neutral industrial palette. Status colours live in statusVisuals.ts
         // so the "what colour is error" decision has exactly one home.
         surface: {
           0: '#0b0f14',

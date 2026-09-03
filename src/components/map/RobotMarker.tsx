@@ -41,7 +41,10 @@ function RobotMarkerBase({ robot, selected, dimmed, nowMs, instant, onSelect }: 
   return (
     <button
       type="button"
-      onClick={() => onSelect(robot.robotId)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(robot.robotId);
+      }}
       aria-label={`${robot.robotId}, ${visual.label}, battery ${robot.battery.toFixed(0)} percent${attention ? ', needs attention' : ''}`}
       aria-pressed={selected}
       title={`${robot.robotId} - ${robot.robotType}\n${visual.label} - ${robot.battery.toFixed(0)}%\n(${robot.x.toFixed(0)}, ${robot.y.toFixed(0)})`}

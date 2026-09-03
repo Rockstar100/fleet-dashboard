@@ -7,7 +7,7 @@
  * starts clean. Every view in the app reads from the state this hook returns.
  */
 
-import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { fleetReducer, initFleetState } from '../lib/fleetReducer';
 import { recordedEvents, roster } from '../data';
 import { useReplay } from './useReplay';
@@ -60,8 +60,21 @@ export function useFleetController() {
    * Wall-clock reference for the "no telemetry / stale" attention rule. Only
    * meaningful for the live feed — in replay the wall clock is unrelated to the
    * recorded timeline (a paused replay must not flag every robot as stale).
+   *
+   * Advanced on a 1s interval (not only when a live tick arrives) so a robot
+   * that stops reporting still flips to stale within ~1s of the threshold,
+   * even if the rest of the fleet (or the feed UI) is quiet.
    */
-  const attentionNowMs = mode === 'live' ? Date.now() : undefined;
+  const [attentionNowMs, setAttentionNowMs] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (mode !== 'live') {
+      setAttentionNowMs(undefined);
+      return undefined;
+    }
+    setAttentionNowMs(Date.now());
+    const id = window.setInterval(() => setAttentionNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [mode]);
 
   const { series, summary } = useFleetMetrics(state, `${mode}:${epoch}`, attentionNowMs);
 

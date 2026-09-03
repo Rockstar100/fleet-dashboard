@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { Dashboard } from '../components/dashboard/Dashboard';
 
 // jsdom has no layout engine; give ResponsiveContainer a size so recharts renders.
@@ -33,5 +33,23 @@ describe('Dashboard smoke', () => {
     expect(screen.getByRole('button', { name: /restart replay/i })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: /playback speed/i })).toBeInTheDocument();
     expect(screen.getByRole('slider', { name: /replay progress/i })).toBeInTheDocument();
+  });
+
+  it('keeps map, list and details selection in sync, and deselects on empty-map click', () => {
+    render(<Dashboard />);
+
+    const mapMarker = screen.getByRole('button', { name: /^r1,/i });
+    fireEvent.click(mapMarker);
+
+    expect(mapMarker).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('option', { name: /r1/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('heading', { name: 'r1', level: 3 })).toBeInTheDocument();
+
+    // Click the layout image (covers the map plane) — must deselect. This was a
+    // real bug: the handler previously required e.target === e.currentTarget,
+    // which never fires when the <img> is the click target.
+    fireEvent.click(screen.getByAltText(/site layout/i));
+    expect(screen.getByText(/select a robot/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^r1,/i })).toHaveAttribute('aria-pressed', 'false');
   });
 });

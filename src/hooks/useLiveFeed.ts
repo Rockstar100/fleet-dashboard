@@ -31,6 +31,7 @@ export function useLiveFeed(dispatch: (action: FleetAction) => void, { enabled, 
   const [running, setRunning] = useState(false);
   const [lastTickMs, setLastTickMs] = useState<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [robotCount, setRobotCount] = useState(0);
   const getSeedRef = useRef(getSeed);
   getSeedRef.current = getSeed;
 
@@ -64,7 +65,9 @@ export function useLiveFeed(dispatch: (action: FleetAction) => void, { enabled, 
       setRunning(false);
       return undefined;
     }
-    const sim = createLiveSimulator(getSeedRef.current());
+    const seed = getSeedRef.current();
+    const sim = createLiveSimulator(seed);
+    setRobotCount(seed.length);
     setRunning(true);
     setElapsedSeconds(0);
     tick(sim); // emit immediately so the feed isn't blank for one interval
@@ -78,7 +81,7 @@ export function useLiveFeed(dispatch: (action: FleetAction) => void, { enabled, 
   return {
     running,
     lastTickMs,
-    eventsPerSecond: Math.round((1000 / LIVE.tickMs) * 8),
+    eventsPerSecond: robotCount > 0 ? Math.round((1000 / LIVE.tickMs) * robotCount) : 0,
     elapsedSeconds,
   };
 }

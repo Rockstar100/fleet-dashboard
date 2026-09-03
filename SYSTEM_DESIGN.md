@@ -137,9 +137,11 @@ silent.
 `RobotState.lastSeenWallMs = Date.now()` in `fleetReducer.applyEvent`.
 `statusClassification.isStale(robot, nowMs)` returns true once
 `nowMs - lastSeenWallMs > ATTENTION.staleAfterMs` (15 s, in `config.ts`), and
-`needsAttention` includes that clause. `useFleetController` passes a live
-`attentionNowMs` only in live mode, and `TopBar`/`RobotDetails` re-render on a
-1 s interval so the flag appears within ~1 s of the threshold.
+`needsAttention` includes that clause. `useFleetController` keeps a live
+`attentionNowMs` that advances on a 1 s interval while mode is `live` (not only
+when a tick arrives), so a robot that stops reporting still flips within ~1 s
+of the threshold. `TopBar`'s feed indicator separately re-renders on its own
+1 s timer to show "last tick" age.
 
 **What the operator sees.** The robot's marker keeps its last known position and
 starts pulsing red (`RobotMarker` attention ring); it jumps to the top of
