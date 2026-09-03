@@ -9,7 +9,7 @@ switch to a continuously-generated **live feed**, see where every robot is on th
 site map, track how the fleet composition trends over time, and drill into any
 robot that needs attention.
 
-**Live demo:** _<add your deployed URL here after the first deploy>_
+**Live demo:** https://rockstar100.github.io/fleet-dashboard/
 The live feed is generated entirely in the browser, so the deployed link is a
 plain static site with no backend to wake up.
 
