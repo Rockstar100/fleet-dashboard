@@ -34,6 +34,20 @@ body {
   border-radius: 4px;
 }
 
+/* One consistent keyboard-focus treatment for every interactive control that
+   doesn't already define its own (inputs/selects use a border-color focus
+   instead, which is enough contrast on their own bordered surface). Applied
+   via a class rather than a global `:focus-visible` selector so surfaces
+   that intentionally style focus differently (RobotMarker's white ring,
+   chosen for contrast against every possible status color) aren't overridden. */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid theme('colors.accent');
+  outline-offset: 2px;
+}
+
 /* Position/opacity transition for map markers. Lives in a class (not inline
    style) so prefers-reduced-motion can turn it off with plain CSS; marker
    jumps (seek/restart) add .marker-instant to force it off for one render. */

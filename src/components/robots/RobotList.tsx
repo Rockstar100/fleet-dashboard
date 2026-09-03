@@ -39,7 +39,7 @@ function RobotListBase({ robots, selectedRobotId, nowMs, onSelect }: Props) {
               role="option"
               aria-selected={selected}
               onClick={() => onSelect(robot.robotId)}
-              className={`relative flex w-full items-center gap-3 rounded-md border-l-2 px-2.5 py-2.5 text-left transition-colors duration-150 ${
+              className={`focus-ring relative flex w-full items-center gap-3 rounded-md border-l-2 px-2.5 py-2.5 text-left transition-colors duration-150 ${
                 selected ? 'border-accent bg-accent/[0.08]' : 'border-transparent hover:bg-surface-2'
               }`}
             >

@@ -21,7 +21,7 @@ export function PlaybackControls({ replay }: Props) {
           type="button"
           onClick={replay.restart}
           aria-label="Restart replay"
-          className="grid h-8 w-8 place-items-center rounded-md border border-line bg-surface-2 text-ink-mid transition-colors duration-150 hover:bg-surface-3 hover:text-ink-hi"
+          className="focus-ring grid h-8 w-8 place-items-center rounded-md border border-line bg-surface-2 text-ink-mid transition-colors duration-150 hover:bg-surface-3 hover:text-ink-hi"
         >
           <RestartIcon className="h-4 w-4" />
         </button>
@@ -29,7 +29,7 @@ export function PlaybackControls({ replay }: Props) {
           type="button"
           onClick={replay.toggle}
           aria-label={playing ? 'Pause replay' : atEnd ? 'Replay from the start' : 'Play replay'}
-          className="grid h-8 w-8 place-items-center rounded-md border border-accent/40 bg-accent/15 text-accent transition-colors duration-150 hover:bg-accent/25"
+          className="focus-ring grid h-8 w-8 place-items-center rounded-md border border-accent/40 bg-accent/15 text-accent transition-colors duration-150 hover:bg-accent/25"
         >
           {playing ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
         </button>

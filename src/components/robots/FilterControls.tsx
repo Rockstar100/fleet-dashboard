@@ -43,7 +43,7 @@ export function FilterControls({ filters, onChange, attentionCount }: Props) {
           type="button"
           onClick={() => onChange({ ...filters, attentionOnly: !filters.attentionOnly })}
           aria-pressed={filters.attentionOnly}
-          className={`flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 ${
+          className={`focus-ring flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 ${
             filters.attentionOnly
               ? 'border-red-500/40 bg-red-500/15 text-red-300'
               : 'border-line bg-surface-2 text-ink-mid hover:bg-surface-3'

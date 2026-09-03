@@ -66,7 +66,7 @@ export function RobotDetails({ robot, mode, nowMs, onClear }: Props) {
           type="button"
           onClick={onClear}
           aria-label="Clear selection"
-          className="grid h-6 w-6 shrink-0 place-items-center rounded text-ink-lo transition-colors duration-150 hover:bg-surface-2 hover:text-ink-hi"
+          className="focus-ring grid h-6 w-6 shrink-0 place-items-center rounded text-ink-lo transition-colors duration-150 hover:bg-surface-2 hover:text-ink-hi"
         >
           <XIcon className="h-3.5 w-3.5" />
         </button>
