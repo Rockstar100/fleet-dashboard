@@ -17,6 +17,7 @@ function RobotListBase({ robots, selectedRobotId, nowMs, onSelect }: Props) {
   if (robots.length === 0) {
     return (
       <EmptyState
+        className="flex-1"
         icon={<SearchIcon className="h-5 w-5" />}
         title="No robots match"
         description="Try a different search term or clear the status filter."
