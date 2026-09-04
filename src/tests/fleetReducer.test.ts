@@ -89,4 +89,21 @@ describe('fleetReducer', () => {
     state = fleetReducer(state, { type: 'apply', events: [evt({ t: 5, x: 7, status: 'active' })], nowMs: 2 });
     expect(state.robots.r1!.x).toBe(7);
   });
+
+  it('remembers the last task_event across later events that omit it', () => {
+    let state = initFleetState(roster);
+    state = fleetReducer(state, {
+      type: 'apply',
+      events: [evt({ t: 55, status: 'on_mission', taskEvent: 'task_completed' })],
+      nowMs: 1,
+    });
+    expect(state.robots.r1!.lastTaskEvent).toBe('task_completed');
+
+    state = fleetReducer(state, {
+      type: 'apply',
+      events: [evt({ t: 60, status: 'idle', battery: 40 })],
+      nowMs: 2,
+    });
+    expect(state.robots.r1!.lastTaskEvent).toBe('task_completed');
+  });
 });

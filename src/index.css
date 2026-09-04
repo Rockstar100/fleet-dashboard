@@ -18,9 +18,12 @@ body,
    scroll-wheel/touch path a user drives directly, so this can't fight or
    slow down manual scrolling. Reduced-motion users get instant jumps
    instead, per the same accessibility rule the marker/pulse animations
-   already follow. */
+   already follow.
+   `scrollbar-gutter: stable` reserves scrollbar space so appearing/
+   disappearing overflow cannot shift the map column width. */
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 .scroll-smooth-region {
   scroll-behavior: smooth;

@@ -42,17 +42,16 @@ export function RobotDetails({ robot, mode, nowMs, onClear }: Props) {
   const visual = statusVisual(robot.status);
   const cls = classify(robot, { nowMs });
   const reason = attentionReason(robot, { nowMs });
-  const ageMs = robot.lastSeenWallMs ? Date.now() - robot.lastSeenWallMs : null;
+  const ageMs = robot.lastSeenWallMs ? (nowMs ?? Date.now()) - robot.lastSeenWallMs : null;
 
   const telemetry: Array<[string, string]> = [
     ['Position', `${robot.x.toFixed(0)}, ${robot.y.toFixed(0)}`],
     [mode === 'replay' ? 'Event time' : 'Feed time', formatClock(robot.lastEventT < 0 ? 0 : robot.lastEventT)],
     ['Last update', ageMs == null ? '—' : formatAge(ageMs)],
     ['Updates', String(robot.updates)],
-    // Always render the task row so selecting a robot that once saw a
-    // task_event doesn't grow the panel relative to one that never did.
-    ['Last task', robot.lastTaskEvent ? titleCase(robot.lastTaskEvent) : '—'],
   ];
+
+  const lastTaskLabel = robot.lastTaskEvent ? titleCase(robot.lastTaskEvent) : '—';
 
   return (
     <div className="flex flex-col gap-3">
@@ -100,6 +99,18 @@ export function RobotDetails({ robot, mode, nowMs, onClear }: Props) {
       <div className="flex items-center justify-between rounded-md bg-surface-2 px-2.5 py-2">
         <span className="text-xs text-ink-lo">Battery</span>
         <BatteryBar value={robot.battery} />
+      </div>
+
+      {/* Last task: always a full-width row (never a lone half-grid cell) so
+          task_started / task_completed from the log is obvious when present. */}
+      <div className="flex items-center justify-between rounded-md bg-surface-2 px-2.5 py-2">
+        <span className="text-xs text-ink-lo">Last task</span>
+        <span
+          className={`text-[13px] ${robot.lastTaskEvent ? 'font-medium text-ink-hi' : 'text-ink-lo'}`}
+          data-testid="last-task-value"
+        >
+          {lastTaskLabel}
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[13px]">

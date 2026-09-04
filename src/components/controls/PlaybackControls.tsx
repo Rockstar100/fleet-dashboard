@@ -42,6 +42,10 @@ export function PlaybackControls({ replay }: Props) {
           min={0}
           max={1000}
           value={Math.round(progress * 1000)}
+          onPointerDown={() => {
+            // Pause while scrubbing so the playhead doesn't fight the drag.
+            if (playing) replay.pause();
+          }}
           onChange={(e) => replay.seekFraction(Number(e.target.value) / 1000)}
           className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-surface-3 accent-accent"
           aria-label="Replay progress"

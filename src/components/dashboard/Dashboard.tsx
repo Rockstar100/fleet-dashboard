@@ -23,16 +23,31 @@ export function Dashboard() {
     [robots, attentionNowMs],
   );
 
-  const listRobots = useMemo(
-    () => sortRobotsForList(filterRobots(robots, filters, attentionNowMs), attentionNowMs),
+  const matchedRobots = useMemo(
+    () => filterRobots(robots, filters, attentionNowMs),
     [robots, filters, attentionNowMs],
   );
 
-  const visibleRobotIds = useMemo(() => new Set(listRobots.map((r) => r.robotId)), [listRobots]);
+  const listRobots = useMemo(() => {
+    const filtered = sortRobotsForList(matchedRobots, attentionNowMs);
+    // Keep the selected robot visible in the list even when filters exclude it,
+    // so map selection, list highlight, and details never disagree.
+    if (!selectedRobotId) return filtered;
+    if (filtered.some((r) => r.robotId === selectedRobotId)) return filtered;
+    const selected = robots.find((r) => r.robotId === selectedRobotId);
+    return selected ? [selected, ...filtered] : filtered;
+  }, [matchedRobots, robots, attentionNowMs, selectedRobotId]);
+
+  const visibleRobotIds = useMemo(() => {
+    // Map dimming still follows the raw filters — a selected-but-filtered robot
+    // stays fully opaque via RobotMarker's selected override, while other
+    // non-matches stay dimmed.
+    return new Set(matchedRobots.map((r) => r.robotId));
+  }, [matchedRobots]);
 
   const selectedRobot = selectedRobotId ? robots.find((r) => r.robotId === selectedRobotId) ?? null : null;
 
-  const filtered = listRobots.length !== robots.length;
+  const filtered = matchedRobots.length !== robots.length;
 
   return (
     <div className="flex h-full flex-col bg-surface-0 text-ink-hi">
@@ -74,7 +89,7 @@ export function Dashboard() {
               padded={false}
               contentClassName="min-w-0 gap-3 p-3"
               title="Fleet"
-              meta={filtered ? `${listRobots.length} of ${robots.length}` : `${robots.length} robots`}
+              meta={filtered ? `${matchedRobots.length} of ${robots.length}` : `${robots.length} robots`}
             >
               <FilterControls filters={filters} onChange={setFilters} attentionCount={attentionCount} />
 

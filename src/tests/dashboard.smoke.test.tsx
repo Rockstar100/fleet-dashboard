@@ -52,4 +52,18 @@ describe('Dashboard smoke', () => {
     expect(screen.getByText(/select a robot/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^r1,/i })).toHaveAttribute('aria-pressed', 'false');
   });
+
+  it('keeps the selected robot in the list when filters would otherwise hide it', () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByRole('button', { name: /^r1,/i }));
+    fireEvent.change(screen.getByRole('searchbox', { name: /search robots/i }), { target: { value: 'r2' } });
+
+    // Filter matches only r2, but r1 stays listed because it is selected.
+    const options = screen.getAllByRole('option').map((el) => el.textContent ?? '');
+    expect(options.some((t) => /r1/.test(t))).toBe(true);
+    expect(options.some((t) => /r2/.test(t))).toBe(true);
+    expect(screen.getByRole('option', { name: /r1/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('heading', { name: 'r1', level: 3 })).toBeInTheDocument();
+  });
 });

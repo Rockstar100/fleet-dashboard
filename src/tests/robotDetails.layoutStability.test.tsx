@@ -72,4 +72,21 @@ describe('RobotDetails layout stability', () => {
     expect(emptyBox).not.toBeNull();
     unmount();
   });
+
+  it('surfaces last task_event as a readable Last task value', () => {
+    render(
+      <RobotDetails
+        robot={robot({ lastTaskEvent: 'task_completed' })}
+        mode="replay"
+        onClear={() => {}}
+      />,
+    );
+    expect(screen.getByTestId('last-task-value')).toHaveTextContent('Task Completed');
+  });
+
+  it('still renders the Last task row when no task_event has been seen', () => {
+    render(<RobotDetails robot={robot({ lastTaskEvent: undefined })} mode="replay" onClear={() => {}} />);
+    expect(screen.getByText('Last task')).toBeInTheDocument();
+    expect(screen.getByTestId('last-task-value')).toHaveTextContent('—');
+  });
 });
