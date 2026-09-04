@@ -87,6 +87,6 @@ describe('RobotDetails layout stability', () => {
   it('still renders the Last task row when no task_event has been seen', () => {
     render(<RobotDetails robot={robot({ lastTaskEvent: undefined })} mode="replay" onClear={() => {}} />);
     expect(screen.getByText('Last task')).toBeInTheDocument();
-    expect(screen.getByTestId('last-task-value')).toHaveTextContent('—');
+    expect(screen.getByTestId('last-task-value')).toHaveTextContent('No task event yet');
   });
 });

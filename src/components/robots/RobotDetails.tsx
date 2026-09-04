@@ -51,7 +51,7 @@ export function RobotDetails({ robot, mode, nowMs, onClear }: Props) {
     ['Updates', String(robot.updates)],
   ];
 
-  const lastTaskLabel = robot.lastTaskEvent ? titleCase(robot.lastTaskEvent) : '—';
+  const lastTaskLabel = robot.lastTaskEvent ? titleCase(robot.lastTaskEvent) : 'No task event yet';
 
   return (
     <div className="flex flex-col gap-3">
